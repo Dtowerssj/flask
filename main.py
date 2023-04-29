@@ -13,7 +13,7 @@ def webhook():
     data = json.loads(request.data)
     symbol = data['symbol']
     print(symbol)
-    return 'OK'
+    return symbol
 
 
 if __name__ == '__main__':
