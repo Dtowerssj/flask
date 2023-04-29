@@ -1,5 +1,6 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import os
+import json
 
 app = Flask(__name__)
 
@@ -7,6 +8,12 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     return jsonify({"Choo Choo": "Welcome to your Flask app 🚅"})
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    data = json.loads(request.data)
+    symbol = data['symbol']
+    print(symbol)
+    return 'OK'
 
 
 if __name__ == '__main__':
