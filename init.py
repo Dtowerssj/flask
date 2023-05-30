@@ -1,8 +1,8 @@
-import os
+#import os
 import subprocess
 
 # Instalar los paquetes de requirements.txt
-subprocess.call('pip install -r requirements.txt', shell=True)
+#subprocess.call('pip install -r requirements.txt', shell=True)
 
 # Iniciar el servidor Flask en un proceso en segundo plano
 flask_process = subprocess.Popen('python main.py', shell=True)
