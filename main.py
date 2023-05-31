@@ -121,8 +121,9 @@ def connect_mt5():
         server = data.get("server")
         risk = data.get("risk")
 
+        # Default terminal url: "C:/Program Files/MetaTrader 5/terminal64.exe"
         # establish connection to the MetaTrader 5 terminal
-        if not mt5.initialize("C:/Program Files/MetaTrader 5/terminal64.exe"):
+        if not mt5.initialize():
             print("initialize() failed, error code =",mt5.last_error())
             quit()
 
@@ -140,12 +141,9 @@ def connect_mt5():
                 #print(account_info)
 
                 # display trading account data in the form of a dictionary
-                print("Show account_info()._asdict():")
+                #print("Show account_info()._asdict():")
                 account_info_dict = mt5.account_info()._asdict()
-                print(account_info_dict['balance'] )
                 balance = account_info_dict['balance']
-
-                print(risk, balance)
 
                 """ for prop in account_info_dict:
                     print("  {}={}".format(prop, account_info_dict[prop]))
@@ -157,7 +155,7 @@ def connect_mt5():
         else:
             print("failed to connect at account #{}, error code: {}".format(account, mt5.last_error())) 
         
-        return jsonify({'message': 'Solicitud JSON recibida correctamente'})
+        return jsonify({'message': 'Solicitud JSON recibida correctamente, bot inicializado'})
     else:
         return jsonify({'message': 'La solicitud no es de tipo JSON'})
     

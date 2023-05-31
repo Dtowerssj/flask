@@ -8,10 +8,12 @@ def getPipValue(symbol):
     symbol_1 = symbol[0:3]
     symbol_2 = symbol[3:6]
     c = CurrencyRates()
-    return c.convert(symbol_2, account_currency, c.convert(symbol_1, symbol_2, 1))
+    pip_value = c.convert(symbol_2, account_currency, c.convert(symbol_1, symbol_2, 1))
+    print("VALOR DE PIP: ", pip_value)
+    return pip_value
 
-def calculate_lot(risk, balance, slSize, symbol):
-    print(risk, balance, slSize, symbol)
+def calculate_lot(risk, balance, symbol, sl, entry):
+    """ print(risk, balance, slSize, symbol)
     #pip_value = getPipValue(symbol)
     pip_value = 10
     print("Valor de pip: ", pip_value)
@@ -22,7 +24,85 @@ def calculate_lot(risk, balance, slSize, symbol):
 
     print("Lotaje calculado: ", format(lot))
 
-    return lot
+    return lot """
+
+    print("Balance: ", balance)
+    
+    # Calculate the amount to risk
+    amount_to_risk = balance * (risk/100)
+    print("Monto a arriesgar: ", amount_to_risk)
+
+    # Make sure symbol has any denotation of raw removed
+    symbol_name = symbol.split(".")
+    symbol_name = symbol_name[0]
+
+    #getPipValue(symbol)
+
+    # Branch based on lot size
+    if symbol == "USDJPY" or symbol == "XAGUSD":
+        # USDJPY pip size is 0.01
+        pip_size = 0.01
+        # Calculate the amount of pips being risked
+        stop_pips_integer = abs((entry - sl) / pip_size)
+        print("SL size: ", stop_pips_integer)
+        # Calculate the pip value
+        pip_value = amount_to_risk / stop_pips_integer
+        print("Pip value: ", pip_value)
+        # Add in the exchange rate as the USD is the counter currency
+        pip_value = pip_value * entry #<- we can use the current exchange rate in the entry price
+        print("Pip value 2: ", pip_value)
+        # Calculate the raw lot_size
+        raw_lot_size = pip_value / 1000
+        print("Raw lot size: ", raw_lot_size)
+    # Add in another counter currency example
+    elif symbol == "XAUUSD":
+        # USDJPY pip size is 0.01
+        pip_size = 0.01
+        # Calculate the amount of pips being risked
+        stop_pips_integer = abs((entry - sl) / pip_size)
+        print("SL size: ", stop_pips_integer)
+        # Calculate the pip value
+        pip_value = amount_to_risk / stop_pips_integer
+        print("Pip value: ", pip_value)
+        # Calculate the raw lot_size
+        raw_lot_size = pip_value
+        print("Raw lot size: ", raw_lot_size)
+    elif symbol == "USDCAD":
+        # Pip size is 0.0001
+        pip_size = 0.0001
+        # Calculate the amount of pips being risked
+        stop_pips_integer = abs((entry - sl) / pip_size)
+        # Calculate the pip value
+        pip_value = amount_to_risk / stop_pips_integer
+        # Add in the exchange rate
+        pip_value = pip_value * entry
+        # Calculate the raw lot size
+        raw_lot_size = pip_value / 10
+    else:
+        # Standard calculation, no need for exchange rate
+        pip_size = 0.0001
+        # Calculate number of pips being risked
+        stop_pips_integer = abs((entry - sl) / pip_size)
+        print("SL size: ", stop_pips_integer)
+        # Calculate the pip value
+        pip_value = amount_to_risk / stop_pips_integer
+        print("Pip value: ", pip_value)
+        # Calculate the raw lot size
+        raw_lot_size = pip_value / 10
+        print("Raw lot size: ", raw_lot_size)
+
+    # Format lot size to be MT5 friendly. This may change based on your broker (i.e. if they do micro lots etc)
+    # Turn into a float
+    lot_size = float(raw_lot_size)
+    # Round to 2 decimal places. NOTE: If you have a small balance (< 5000 USD) this rounding may impact risk
+    lot_size = round(lot_size, 2)
+
+    print("Lotaje calculado: ", format(lot_size))
+    # Add in a quick catch to make sure lot size isn't extreme. You can modify this
+    if lot_size >= 10:
+        lot_size = 9.99
+    return lot_size
+
 
 def open_buy(trade_info, risk, balance):
     global lot
@@ -45,7 +125,7 @@ def open_buy(trade_info, risk, balance):
     if symbol_info is None:
         print(symbol, "not found, can not call order_check() = ", mt5.last_error())
         quit()
-        mt5.shutdown() 
+        #mt5.shutdown() 
     
     # display symbol symbol properties
     symbol_info=mt5.symbol_info(symbol)
@@ -54,16 +134,16 @@ def open_buy(trade_info, risk, balance):
         print("{}: spread = {},  digits = {}".format(symbol,symbol_info.spread, symbol_info.digits))
         # display symbol properties as a list
         #print("Show symbol_info(\"{}\")._asdict():".format(symbol))
-        symbol_info_dict = mt5.symbol_info(symbol)._asdict()
+        """ symbol_info_dict = mt5.symbol_info(symbol)._asdict()
         for prop in symbol_info_dict:
-            print("  {}={}".format(prop, symbol_info_dict[prop]))
+            print("  {}={}".format(prop, symbol_info_dict[prop])) """
     
     # if the symbol is unavailable in MarketWatch, add it
     if not symbol_info.visible:
         print(symbol, "is not visible, trying to switch on")
         if not mt5.symbol_select(symbol,True):
             print("symbol_select({}}) failed, exit",symbol)
-            mt5.shutdown()
+            #mt5.shutdown()
             quit()
     
     
@@ -77,16 +157,16 @@ def open_buy(trade_info, risk, balance):
 
 
     slSize = (price - sl)*100
-    lot = calculate_lot(float(risk), float(balance), slSize, symbol)
+    lot = calculate_lot(float(risk), float(balance), symbol, sl, price)
 
-    if symbol == 'XAGUSD' or symbol == 'EURUSD' or 'XAUUSD':
+    """ if symbol == 'XAGUSD' or symbol == 'EURUSD' or 'XAUUSD':
         slSize = (price - sl)*1000
         lot = calculate_lot(float(risk), float(balance), slSize, symbol)
         if symbol == 'XAGUSD':
             lot = 2*(calculate_lot(float(risk), float(balance), slSize, symbol))
         if symbol == 'XAUUSD':
             slSize = (price - sl)*10
-            lot = calculate_lot(float(risk), float(balance), slSize, symbol)
+            lot = calculate_lot(float(risk), float(balance), slSize, symbol) """
 
 
     position_request = {
@@ -120,7 +200,7 @@ def open_buy(trade_info, risk, balance):
                 for tradereq_filed in traderequest_dict:
                     print("       traderequest: {}={}".format(tradereq_filed,traderequest_dict[tradereq_filed]))
         print("shutdown() and quit")
-        mt5.shutdown()
+        #mt5.shutdown()
         quit()
         return
     
@@ -160,7 +240,7 @@ def open_sell(trade_info, risk, balance):
     #print(symbol_info)
     if symbol_info is None:
         print(symbol, "not found, can not call order_check(): ", mt5.last_error())
-        mt5.shutdown()
+        #mt5.shutdown()
         quit()
     
     # if the symbol is unavailable in MarketWatch, add it
@@ -168,7 +248,7 @@ def open_sell(trade_info, risk, balance):
         print(symbol, "is not visible, trying to switch on")
         if not mt5.symbol_select(symbol,True):
             print("symbol_select({}}) failed, exit",symbol)
-            mt5.shutdown()
+            #mt5.shutdown()
             quit()
      
     # establish connection to the MetaTrader 5 terminal
@@ -180,7 +260,7 @@ def open_sell(trade_info, risk, balance):
     selected=mt5.symbol_select(symbol,True) 
     if not selected: 
         print("failed to select, error code =",mt5.last_error())
-        mt5.shutdown() 
+        #mt5.shutdown() 
         quit() 
     
     # display symbol properties 
@@ -196,14 +276,7 @@ def open_sell(trade_info, risk, balance):
     else: 
         print("Failed to symbol info ", symbol) 
   
-    if symbol == 'XAGUSD' or symbol == 'EURUSD' or 'XAUUSD':
-        slSize = (price - sl)*1000
-        lot = calculate_lot(float(risk), float(balance), slSize, symbol)
-        if symbol == 'XAGUSD':
-            lot = 2*(calculate_lot(float(risk), float(balance), slSize, symbol))
-        if symbol == 'XAUUSD':
-            slSize = (price - sl)*10
-            lot = calculate_lot(float(risk), float(balance), slSize, symbol)
+    
 
     point = symbol_info.point
     price = symbol_info.bid
@@ -218,7 +291,18 @@ def open_sell(trade_info, risk, balance):
     print(filling_type - 1) """
 
     slSize = (sl - price)*1000
-    lot = calculate_lot(float(risk), float(balance), slSize, symbol)
+    lot = calculate_lot(float(risk), float(balance), symbol, sl, price)
+
+    """ if symbol == 'XAGUSD' or symbol == 'EURUSD' or 'XAUUSD':
+        slSize = (price - sl)*1000
+        lot = calculate_lot(float(risk), float(balance), slSize, symbol)
+        if symbol == 'XAGUSD':
+            lot = 2*(calculate_lot(float(risk), float(balance), slSize, symbol))
+        if symbol == 'XAUUSD':
+            slSize = (price - sl)*10
+            lot = calculate_lot(float(risk), float(balance), slSize, symbol) """
+
+    print("Lotaje calculado: ", format(lot))
 
     position_request = {
         "action": mt5.TRADE_ACTION_DEAL,
@@ -251,7 +335,7 @@ def open_sell(trade_info, risk, balance):
                 for tradereq_filed in traderequest_dict:
                     print("       traderequest: {}={}".format(tradereq_filed,traderequest_dict[tradereq_filed]))
         print("shutdown() and quit")
-        mt5.shutdown()
+        #mt5.shutdown()
         quit()
     
     print("2. order_send done, ", result)
@@ -314,7 +398,7 @@ def close_position(symbol_text):
                     print("       traderequest: {}={}".format(tradereq_filed,traderequest_dict[tradereq_filed]))
     
     # shut down connection to the MetaTrader 5 terminal
-    mt5.shutdown()
+    #mt5.shutdown()
 
 def modify_sl(symbol, sl):
     
