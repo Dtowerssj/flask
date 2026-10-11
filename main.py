@@ -22,27 +22,6 @@ def get_trading_data(values):
     print(account, server)
 
 
-""""
-account=211990864
-server="OctaFX-Demo"
-pw="jy6yTYRE"
-
- Name     : Diego Torress
-Type     : Forex Hedged USD
-Server   : MetaQuotes-Demo
-Login    : 5013587602
-Password : 5ljmmqqr
-Investor : chylmpe2 
-
-Name     : Diego Torresss
-Type     : Forex Hedged USD
-Server   : MetaQuotes-Demo
-Login    : 5013741150
-Password : eoosj3nu
-Investor : 2owynrnf
-
-
-"""
 
 
 """ 
